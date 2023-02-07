@@ -3,12 +3,12 @@ package bg.sofia.uni.fmi.mjt.dungeons.server.map;
 import bg.sofia.uni.fmi.mjt.dungeons.server.entity.EmptyCell;
 import bg.sofia.uni.fmi.mjt.dungeons.server.entity.GridEntity;
 
-public class Map {
+public class GameMap {
     private int n;
     private int m;
     private GridEntity[][] grid;
 
-    public Map(int n, int m) {
+    public GameMap(int n, int m) {
         this.n = n;
         this.m = m;
         this.grid = new GridEntity[n][m];
@@ -45,5 +45,13 @@ public class Map {
 
     public boolean isInside(int r, int c) {
         return (0 <= r && r < n && 0 <= c && c < m);
+    }
+
+    public int getRowCnt() {
+        return n;
+    }
+
+    public int getColCnt() {
+        return m;
     }
 }

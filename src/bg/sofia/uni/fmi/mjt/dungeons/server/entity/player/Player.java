@@ -86,4 +86,21 @@ public class Player implements GridEntity, MovableEntity {
     public boolean isAllowedToMove() {
         return moveController.isActive();
     }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+
+        if (obj instanceof Player other) {
+            return id.equals(other.id);
+        }
+        return false;
+    }
 }

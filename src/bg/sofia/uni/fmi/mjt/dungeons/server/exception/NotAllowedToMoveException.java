@@ -1,6 +1,6 @@
 package bg.sofia.uni.fmi.mjt.dungeons.server.exception;
 
-public class NotAllowedToMoveException extends InvalidClientCommandException {
+public class NotAllowedToMoveException extends ClientCommandException {
     public NotAllowedToMoveException() {
         super();
     }

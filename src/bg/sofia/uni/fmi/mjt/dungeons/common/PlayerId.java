@@ -14,4 +14,26 @@ public class PlayerId {
     public char toChar() {
         return (char) ('0' + number);
     }
+
+    @Override
+    public int hashCode() {
+        return number;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+
+        if (obj instanceof PlayerId other) {
+            return (number == other.number);
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return String.valueOf(number);
+    }
 }
