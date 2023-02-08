@@ -1,6 +1,8 @@
 package bg.sofia.uni.fmi.mjt.dungeons.common;
 
-public class PlayerId {
+import java.io.Serializable;
+
+public class PlayerId implements Serializable {
     private int number;
 
     public PlayerId(int number) {

@@ -24,4 +24,9 @@ public class EmptyCell implements GridEntity {
     public char consoleSymbol() {
         return '.';
     }
+
+    @Override
+    public boolean isFree() {
+        return true;
+    }
 }

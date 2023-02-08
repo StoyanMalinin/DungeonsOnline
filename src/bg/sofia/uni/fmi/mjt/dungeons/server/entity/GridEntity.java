@@ -7,4 +7,6 @@ public interface GridEntity {
     Position getPosition();
     boolean canEnter();
     char consoleSymbol();
+
+    boolean isFree();
 }

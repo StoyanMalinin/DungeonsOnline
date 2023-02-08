@@ -2,14 +2,17 @@ package bg.sofia.uni.fmi.mjt.dungeons.common;
 
 import bg.sofia.uni.fmi.mjt.dungeons.server.entity.player.PlayerState;
 import bg.sofia.uni.fmi.mjt.dungeons.server.interaction.Interaction;
+import bg.sofia.uni.fmi.mjt.dungeons.server.map.GameMapView;
 
-public class ClientPlayerView {
+import java.io.Serializable;
+
+public class ClientPlayerView implements Serializable {
     private PlayerId id;
     private String serverMessage;
     private String errorMessage;
+    private GameMapView gameMapView;
 
-
-    private ClientPlayerView(PlayerState state) {
+    public ClientPlayerView(PlayerState state) {
         if (state == null) {
             throw new IllegalArgumentException("State cannot be null");
         }
@@ -19,6 +22,9 @@ public class ClientPlayerView {
 
         if (state.getErrorMessage() != null) {
             this.errorMessage = state.getErrorMessage();
+        }
+        if (state.getGameMapView() != null) {
+            this.gameMapView = state.getGameMapView();
         }
     }
 
@@ -43,6 +49,21 @@ public class ClientPlayerView {
 
         builder.append("---------- Map State ----------");
         builder.append(System.lineSeparator());
+        builder.append(gameMapView.toString());
+
+        if (serverMessage != null) {
+            builder.append("------- Server message ----- ");
+            builder.append(System.lineSeparator());
+            builder.append(serverMessage);
+            builder.append(System.lineSeparator());
+        }
+
+        if (errorMessage != null) {
+            builder.append("------- Error message ----- ");
+            builder.append(System.lineSeparator());
+            builder.append(errorMessage);
+            builder.append(System.lineSeparator());
+        }
 
         return builder.toString();
     }

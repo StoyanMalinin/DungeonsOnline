@@ -23,4 +23,9 @@ public class WallCell implements GridEntity {
     public char consoleSymbol() {
         return '#';
     }
+
+    @Override
+    public boolean isFree() {
+        return false;
+    }
 }

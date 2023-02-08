@@ -1,5 +1,11 @@
 package bg.sofia.uni.fmi.mjt.dungeons.server;
 
+import bg.sofia.uni.fmi.mjt.dungeons.server.entity.player.Player;
+import bg.sofia.uni.fmi.mjt.dungeons.server.exception.NoAvailableMapPositionsException;
+import bg.sofia.uni.fmi.mjt.dungeons.server.exception.NoAvailablePlayersException;
+import bg.sofia.uni.fmi.mjt.dungeons.server.web.ClientInputHandler;
+import bg.sofia.uni.fmi.mjt.dungeons.server.web.ClientMessageSender;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -8,40 +14,44 @@ import java.util.concurrent.Executors;
 
 public class Server {
     private static final int SERVER_PORT = 4444;
-    private static final int MAX_EXECUTOR_THREADS = 10;
+    private static final int MAX_EXECUTOR_THREADS = 20;
 
     public static void main(String[] args) {
 
-        ExecutorService client = Executors.newFixedThreadPool(MAX_EXECUTOR_THREADS);
-
-        Thread.currentThread().setName("Echo Server Thread");
+        ExecutorService clientHandlers = Executors.newFixedThreadPool(MAX_EXECUTOR_THREADS);
+        CommandExecutor commandExecutor = new CommandExecutor(new GameMaster());
 
         try (ServerSocket serverSocket = new ServerSocket(SERVER_PORT)) {
-
             System.out.println("Server started and listening for connect requests");
 
-            Socket clientSocket;
-
             while (true) {
-
-                // Calling accept() blocks and waits for connection request by a client
-                // When a request comes, accept() returns a socket to communicate with this
-                // client
-                clientSocket = serverSocket.accept();
-
+                Socket clientSocket = serverSocket.accept();
                 System.out.println("Accepted connection request from client " + clientSocket.getInetAddress());
 
-                // We want each client to be processed in a separate thread
-                // to keep the current thread free to accept() requests from new clients
-               // ClientRequestHandler clientHandler = new ClientRequestHandler(clientSocket);
-
-                // uncomment the line below to launch a thread manually
-                // new Thread(clientHandler).start();
-                //executor.execute(clientHandler); // use a thread pool to launch a thread
+                registerClient(clientSocket, commandExecutor, clientHandlers);
             }
 
         } catch (IOException e) {
             throw new RuntimeException("There is a problem with the server socket", e);
+        }
+    }
+
+    private static void registerClient(Socket clientSocket, CommandExecutor commandExecutor,
+                                       ExecutorService clientHandlers) {
+        try {
+            Player player = commandExecutor.registerPlayer();
+
+            ClientInputHandler clientInputHandler = new ClientInputHandler(player.getId(), commandExecutor, clientSocket);
+            ClientMessageSender clientMessageSender = new ClientMessageSender(clientSocket, player);
+
+            clientHandlers.execute(clientInputHandler);
+            clientHandlers.execute(clientMessageSender);
+
+            commandExecutor.refreshGameMaster();
+        } catch (NoAvailablePlayersException e) {
+
+        } catch (NoAvailableMapPositionsException e) {
+
         }
     }
 }

@@ -17,6 +17,9 @@ public class Player implements GridEntity, MovableEntity {
     private MoveController moveController;
 
     private EntityMovedObserver moveObserver;
+    private PlayerState state;
+    private PlayerStateMonitor stateMonitor;
+
 
     public Player(PlayerId id, Position position, MoveController moveController) {
         if (id == null) {
@@ -30,9 +33,12 @@ public class Player implements GridEntity, MovableEntity {
         }
 
         this.id = id;
+        this.state = null;
         this.position = position;
         this.moveController = moveController;
         this.moveObserver = new EntityMovedObserver();
+
+        this.stateMonitor = new PlayerStateMonitor();
     }
 
     public PlayerId getId() {
@@ -55,12 +61,17 @@ public class Player implements GridEntity, MovableEntity {
     }
 
     @Override
+    public boolean isFree() {
+        return false;
+    }
+
+    @Override
     public boolean canMove(Direction direction) {
         if (direction == null) {
             throw new IllegalArgumentException("Direction cannot be null");
         }
 
-        return moveController.canMove(direction) && moveController.isActive();
+        return moveController.canMove(position, direction) && moveController.isActive();
     }
 
     @Override
@@ -76,7 +87,7 @@ public class Player implements GridEntity, MovableEntity {
         }
 
         Position oldPosition = position;
-        Position newPosition = moveController.move(direction);
+        Position newPosition = moveController.move(position, direction);
         position = newPosition;
 
         moveObserver.notifyListeners(this, oldPosition, newPosition);
@@ -102,5 +113,28 @@ public class Player implements GridEntity, MovableEntity {
             return id.equals(other.id);
         }
         return false;
+    }
+
+    public void setState(PlayerState state) {
+        if (state == null) {
+            throw new IllegalArgumentException("State cannot be null");
+        }
+
+        this.state = state;
+        onStateUpdate();
+    }
+
+    private void onStateUpdate() {
+        synchronized (stateMonitor) {
+            stateMonitor.notifyAll();
+        }
+    }
+
+    public PlayerStateMonitor getStateMonitor() {
+        return stateMonitor;
+    }
+
+    public PlayerState getState() {
+        return state;
     }
 }
