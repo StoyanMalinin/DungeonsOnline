@@ -4,7 +4,6 @@ import java.io.Serializable;
 
 public class PlayerId implements Serializable {
     private int number;
-
     public PlayerId(int number) {
         if (!(0 <= number && number <= 9)) {
             throw new IllegalArgumentException("Number should be a single digit");

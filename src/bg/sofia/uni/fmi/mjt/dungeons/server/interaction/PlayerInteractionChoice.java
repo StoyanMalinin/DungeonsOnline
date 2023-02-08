@@ -43,6 +43,7 @@ public class PlayerInteractionChoice implements InteractionChoice {
             builder.append(i);
             builder.append(" -> ");
             builder.append(options.get(i).toString());
+            builder.append(System.lineSeparator());
         }
 
         return builder.toString();

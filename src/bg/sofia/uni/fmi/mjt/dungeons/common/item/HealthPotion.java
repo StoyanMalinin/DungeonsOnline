@@ -45,7 +45,7 @@ public class HealthPotion implements Spell {
 
     @Override
     public Stats affectStats(Stats s) {
-        return new Stats(s.health() + points, s.mana(), s.attack(), s.defense());
+        return s.changedHealth(s.getHealth() + points);
     }
 
     @Override

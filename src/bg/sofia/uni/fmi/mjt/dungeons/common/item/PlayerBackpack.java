@@ -1,5 +1,7 @@
 package bg.sofia.uni.fmi.mjt.dungeons.common.item;
 
+import bg.sofia.uni.fmi.mjt.dungeons.common.Stats;
+
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,5 +37,14 @@ public class PlayerBackpack implements Backpack {
     @Override
     public boolean removeItem(Item item) {
         return items.remove(item);
+    }
+
+    @Override
+    public Stats affectedStats(Stats s) {
+        for (Item item : items) {
+            s = item.affectStats(s);
+        }
+
+        return s;
     }
 }

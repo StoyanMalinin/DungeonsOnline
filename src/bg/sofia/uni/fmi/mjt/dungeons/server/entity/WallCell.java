@@ -1,5 +1,8 @@
 package bg.sofia.uni.fmi.mjt.dungeons.server.entity;
 
+import bg.sofia.uni.fmi.mjt.dungeons.server.interaction.EmptyInteractionChoice;
+import bg.sofia.uni.fmi.mjt.dungeons.server.interaction.InteractionChoice;
+import bg.sofia.uni.fmi.mjt.dungeons.server.interaction.InteractionNegotiator;
 import bg.sofia.uni.fmi.mjt.dungeons.server.map.Position;
 
 public class WallCell implements GridEntity {
@@ -27,5 +30,20 @@ public class WallCell implements GridEntity {
     @Override
     public boolean isFree() {
         return false;
+    }
+
+    @Override
+    public String getName() {
+        return "WallCell(" + position.row() + ", " + position.col()+ ")";
+    }
+
+    @Override
+    public InteractionChoice getInteractionChoice(GameEntity other) {
+        return new EmptyInteractionChoice();
+    }
+
+    @Override
+    public void negotiateForInteractions(InteractionNegotiator negotiator) {
+
     }
 }

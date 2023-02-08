@@ -1,27 +1,25 @@
 package bg.sofia.uni.fmi.mjt.dungeons.server.entity.player;
 
-import bg.sofia.uni.fmi.mjt.dungeons.server.interaction.Interaction;
 import bg.sofia.uni.fmi.mjt.dungeons.server.interaction.InteractionChoice;
-import bg.sofia.uni.fmi.mjt.dungeons.server.interaction.PlayerInteractionChoice;
 import bg.sofia.uni.fmi.mjt.dungeons.server.map.GameMapView;
 
 public class PlayerState {
     private Player player;
     private GameMapView gameMapView;
-    private Interaction interaction;
+    private InteractionChoice interactionChoice;
     private String errorMessage;
 
     private PlayerState(PlayerStateBuilder builder) {
         this.player = builder.player;
         this.gameMapView = builder.gameMapView;
-        this.interaction = builder.interaction;
+        this.interactionChoice = builder.interactionChoice;
         this.errorMessage = builder.errorMessage;
     }
 
     public static class PlayerStateBuilder {
         private Player player;
         private GameMapView gameMapView;
-        private Interaction interaction;
+        private InteractionChoice interactionChoice;
         private String errorMessage;
 
         public PlayerStateBuilder(Player player) {
@@ -31,7 +29,7 @@ public class PlayerState {
 
             this.player = player;
             this.gameMapView = null;
-            this.interaction = null;
+            this.interactionChoice = null;
             this.errorMessage = null;
         }
 
@@ -44,12 +42,12 @@ public class PlayerState {
             return this;
         }
 
-        public PlayerStateBuilder setInteraction(Interaction interaction) {
-            if (interaction == null) {
+        public PlayerStateBuilder setInteractionChoice(InteractionChoice interactionChoice) {
+            if (interactionChoice == null) {
                 throw new IllegalArgumentException("Interaction cannot be null");
             }
 
-            this.interaction = interaction;
+            this.interactionChoice = interactionChoice;
             return this;
         }
 
@@ -71,8 +69,8 @@ public class PlayerState {
         return new PlayerStateBuilder(player);
     }
 
-    public Interaction getInteraction() {
-        return interaction;
+    public InteractionChoice getInteractionChoice() {
+        return interactionChoice;
     }
 
     public Player getPlayer() {

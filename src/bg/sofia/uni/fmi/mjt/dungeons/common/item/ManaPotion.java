@@ -45,7 +45,7 @@ public class ManaPotion implements Spell {
 
     @Override
     public Stats affectStats(Stats s) {
-        return new Stats(s.health(), s.mana() + points, s.attack(), s.defense());
+        return s.changedMana(s.getMana() + points);
     }
 
     @Override

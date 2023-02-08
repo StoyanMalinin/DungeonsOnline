@@ -2,6 +2,7 @@ package bg.sofia.uni.fmi.mjt.dungeons.client;
 
 import bg.sofia.uni.fmi.mjt.dungeons.common.PlayerId;
 import bg.sofia.uni.fmi.mjt.dungeons.common.command.MoveCommand;
+import bg.sofia.uni.fmi.mjt.dungeons.common.command.PerformInteractionFromChoiceCommand;
 import bg.sofia.uni.fmi.mjt.dungeons.server.map.Direction;
 
 import java.io.IOException;
@@ -29,16 +30,21 @@ public class UserInputHandler implements Runnable {
                 if (input.equals("l") == true) {
                     serverOutput.writeObject(new MoveCommand(id, Direction.LEFT));
                 }
-                if (input.equals("r") == true) {
+                else if (input.equals("r") == true) {
                     serverOutput.writeObject(new MoveCommand(id, Direction.RIGHT));
                 }
-                if (input.equals("u") == true) {
+                else if (input.equals("u") == true) {
                     serverOutput.writeObject(new MoveCommand(id, Direction.UP));
                 }
-                if (input.equals("d") == true) {
+                else if (input.equals("d") == true) {
                     serverOutput.writeObject(new MoveCommand(id, Direction.DOWN));
                 } else {
-                    System.out.println("Invalid command");
+                    try {
+                        int choiceInd = Integer.valueOf(input);
+                        serverOutput.writeObject(new PerformInteractionFromChoiceCommand(id, choiceInd));
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid command");
+                    }
                 }
             }
         } catch (IOException e) {

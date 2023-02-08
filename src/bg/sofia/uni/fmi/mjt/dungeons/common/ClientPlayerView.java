@@ -1,7 +1,7 @@
 package bg.sofia.uni.fmi.mjt.dungeons.common;
 
 import bg.sofia.uni.fmi.mjt.dungeons.server.entity.player.PlayerState;
-import bg.sofia.uni.fmi.mjt.dungeons.server.interaction.Interaction;
+import bg.sofia.uni.fmi.mjt.dungeons.server.interaction.InteractionChoice;
 import bg.sofia.uni.fmi.mjt.dungeons.server.map.GameMapView;
 
 import java.io.Serializable;
@@ -11,6 +11,8 @@ public class ClientPlayerView implements Serializable {
     private String serverMessage;
     private String errorMessage;
     private GameMapView gameMapView;
+    private Stats playerStats;
+
 
     public ClientPlayerView(PlayerState state) {
         if (state == null) {
@@ -18,7 +20,8 @@ public class ClientPlayerView implements Serializable {
         }
 
         this.id = state.getPlayer().getId();
-        this.serverMessage = generateServerMessage(state.getInteraction());
+        this.serverMessage = generateServerMessage(state.getInteractionChoice());
+        this.playerStats = state.getPlayer().getStats();
 
         if (state.getErrorMessage() != null) {
             this.errorMessage = state.getErrorMessage();
@@ -28,12 +31,13 @@ public class ClientPlayerView implements Serializable {
         }
     }
 
-    private String generateServerMessage(Interaction interaction) {
+    private String generateServerMessage(InteractionChoice interactionChoice) {
         StringBuilder builder = new StringBuilder();
 
         builder.append("You can decide to move by typing u/d/l/r" + System.lineSeparator());
-        if (interaction != null) {
-            builder.append(interaction.toString());
+        if (interactionChoice != null && interactionChoice.getOptions().isEmpty() == false) {
+            builder.append("You can chose interaction by typing its index" + System.lineSeparator());
+            builder.append(interactionChoice);
         }
 
         return builder.toString();
@@ -46,6 +50,9 @@ public class ClientPlayerView implements Serializable {
         builder.append("Player state of player with id ");
         builder.append(id.toString());
         builder.append(System.lineSeparator());
+        builder.append("Stats: " + System.lineSeparator());
+        builder.append(playerStats);
+
 
         builder.append("---------- Map State ----------");
         builder.append(System.lineSeparator());
