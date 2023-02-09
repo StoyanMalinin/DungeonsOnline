@@ -20,7 +20,7 @@ public class PlayerBackpack implements Backpack, Serializable {
     }
 
     @Override
-    public Collection<Item> getItems() {
+    public List<Item> getItems() {
         return List.copyOf(items);
     }
 

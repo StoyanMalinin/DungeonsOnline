@@ -5,4 +5,5 @@ public interface FightableEntity extends GameEntity {
     boolean takeDamage(double damage, FightableEntity attacker);
     boolean isAlive();
     void onVictimDied(FightableEntity victim);
+    int getXPForKilling();
 }

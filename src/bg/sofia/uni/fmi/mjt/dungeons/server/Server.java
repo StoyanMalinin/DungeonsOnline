@@ -17,12 +17,15 @@ public class Server {
     private static final int MAX_EXECUTOR_THREADS = 20;
 
     private static final int MAP_SIZE = 7;
-    private static final int MONSTER_COUNT = 3;
+    private static final int MONSTER_CNT = 3;
+    private static final int WALL_CELL_CNT = 5;
+    private static final int TREASURE_CNT = 3;
 
     public static void main(String[] args) {
 
         ExecutorService clientHandlers = Executors.newFixedThreadPool(MAX_EXECUTOR_THREADS);
-        CommandExecutor commandExecutor = new CommandExecutor(new GameMaster(MAP_SIZE, MONSTER_COUNT));
+        CommandExecutor commandExecutor = new CommandExecutor(new GameMaster(MAP_SIZE, MONSTER_CNT,
+                WALL_CELL_CNT, TREASURE_CNT));
 
         try (ServerSocket serverSocket = new ServerSocket(SERVER_PORT)) {
             System.out.println("Server started and listening for connect requests");

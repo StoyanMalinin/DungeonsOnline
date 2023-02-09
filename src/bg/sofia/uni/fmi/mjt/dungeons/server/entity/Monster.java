@@ -89,6 +89,12 @@ public class Monster implements GridEntity, FightableEntity {
     }
 
     @Override
+    public int getXPForKilling() {
+        final int xpPerLevel = 10;
+        return level * xpPerLevel;
+    }
+
+    @Override
     public String getName() {
         return "Monster(" + id + ")";
     }

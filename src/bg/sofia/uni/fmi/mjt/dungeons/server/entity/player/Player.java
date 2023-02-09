@@ -16,6 +16,7 @@ import bg.sofia.uni.fmi.mjt.dungeons.server.observer.PlayerDiedObserver;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 public class Player implements GridEntity, MovableEntity,
         FightableEntity, WeaponCarryingEntity, ItemConsumingEntity,
@@ -45,6 +46,7 @@ public class Player implements GridEntity, MovableEntity,
     private static final int LEVEL_MANA_BONUS = 10;
     private static final int LEVEL_DEFENSE_BONUS = 5;
     private static final int LEVEL_ATTACK_BONUS = 5;
+    private static final int ITEM_RECEIVING_HP_BONUS = 10;
 
     public Player(PlayerId id, Position position, MoveController moveController, int level, Stats stats) {
         if (id == null) {
@@ -248,7 +250,17 @@ public class Player implements GridEntity, MovableEntity,
 
     @Override
     public void onVictimDied(FightableEntity victim) {
-        getHpBonus(XP_KILL_BONUS);
+        if (victim == null) {
+            throw new IllegalArgumentException("Victim cannot be null");
+        }
+
+        getHpBonus(victim.getXPForKilling());
+    }
+
+    @Override
+    public int getXPForKilling() {
+        final int xpPerLevel = 10;
+        return level * xpPerLevel;
     }
 
     private void getHpBonus(int bonus) {
@@ -322,8 +334,18 @@ public class Player implements GridEntity, MovableEntity,
         }
     }
 
-    public void resurrect() {
+    public void resurrect(Random rnd) {
+        if (rnd == null) {
+            throw new IllegalArgumentException("Rnd cannot be null");
+        }
+
+        if (backpack.getItems().isEmpty() == false) {
+            backpack.removeItem(backpack.getItems().get(rnd.nextInt(backpack.getItems().size())));
+        }
         baseStats = baseStats.changedHealth(RESSURRECTION_HEALTH);
+
+        xp = 0;
+        level = 1;
     }
 
     @Override
@@ -374,6 +396,7 @@ public class Player implements GridEntity, MovableEntity,
             return;
         }
 
+        getHpBonus(ITEM_RECEIVING_HP_BONUS);
         backpack.addItem(item);
     }
 

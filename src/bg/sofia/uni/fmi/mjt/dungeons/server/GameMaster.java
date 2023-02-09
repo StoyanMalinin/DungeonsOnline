@@ -2,8 +2,7 @@ package bg.sofia.uni.fmi.mjt.dungeons.server;
 
 import bg.sofia.uni.fmi.mjt.dungeons.common.PlayerId;
 import bg.sofia.uni.fmi.mjt.dungeons.common.Stats;
-import bg.sofia.uni.fmi.mjt.dungeons.common.item.Item;
-import bg.sofia.uni.fmi.mjt.dungeons.common.item.WeaponItem;
+import bg.sofia.uni.fmi.mjt.dungeons.common.item.*;
 import bg.sofia.uni.fmi.mjt.dungeons.server.entity.*;
 import bg.sofia.uni.fmi.mjt.dungeons.server.entity.controller.MapMoveController;
 import bg.sofia.uni.fmi.mjt.dungeons.server.entity.player.Player;
@@ -17,31 +16,29 @@ import bg.sofia.uni.fmi.mjt.dungeons.server.map.Direction;
 import bg.sofia.uni.fmi.mjt.dungeons.server.map.GameMap;
 import bg.sofia.uni.fmi.mjt.dungeons.server.map.GameMapView;
 import bg.sofia.uni.fmi.mjt.dungeons.server.map.Position;
-import bg.sofia.uni.fmi.mjt.dungeons.server.observer.EntityMovedListener;
-import bg.sofia.uni.fmi.mjt.dungeons.server.observer.MonsterAttackedListener;
-import bg.sofia.uni.fmi.mjt.dungeons.server.observer.MonsterDiedListener;
-import bg.sofia.uni.fmi.mjt.dungeons.server.observer.PlayerDiedListener;
+import bg.sofia.uni.fmi.mjt.dungeons.server.observer.*;
 
 import java.util.*;
 
 public class GameMaster implements PlayerDiedListener, EntityMovedListener,
-        MonsterDiedListener, MonsterAttackedListener {
+        MonsterDiedListener, MonsterAttackedListener, TreasureTakenListener {
 
     private Map<Player, InteractionChoice> playerInteraction;
     private Map<PlayerId, Player> id2Player;
     private Set<Player> alivePlayers;
     private Set<Monster> aliveMonsters;
+    private Set<Treasure> treasures;
     private Stack<PlayerId> availablePlayerIds;
     private GameMap gameMap;
     private Random rnd;
 
-    public GameMaster(int mapSize, int monsterCount) {
+    public GameMaster(int mapSize, int monsterCount, int wallCellCount, int treasureCount) {
 
         if (monsterCount < 0) {
             throw new IllegalArgumentException("MonsterCount cannot be negative");
         }
-        if (mapSize <= 0) {
-            throw new IllegalArgumentException("MapSize must be positive");
+        if (treasureCount < 0) {
+            throw new IllegalArgumentException("TreasureCount cannot be negative");
         }
 
         final int playerCnt = 9;
@@ -49,10 +46,11 @@ public class GameMaster implements PlayerDiedListener, EntityMovedListener,
 
         this.availablePlayerIds = new Stack<>();
         this.aliveMonsters = new HashSet<>();
-        this.gameMap = new GameMap(mapSize, mapSize);
+        this.gameMap = new GameMap(mapSize, mapSize, wallCellCount);
         this.alivePlayers = new HashSet<>();
         this.id2Player = new HashMap<>();
         this.playerInteraction = new HashMap<>();
+        this.treasures = new HashSet<>();
         this.rnd = new Random(seed);
 
         for (int p = playerCnt; p >= 1; p--) {
@@ -72,6 +70,41 @@ public class GameMaster implements PlayerDiedListener, EntityMovedListener,
 
             this.aliveMonsters.add(monster);
         }
+
+        for (int t = 0; t < treasureCount; t++) {
+            Position position = getRandomFreePosition();
+            if (position == null) {
+                break;
+            }
+
+            Treasure treasure = new Treasure(t, getRandomItem(), position);
+            treasure.getTreasureTakenObserver().subscribe(this);
+
+            this.treasures.add(treasure);
+        }
+    }
+
+    private Item getRandomItem() {
+        final int typeCnt = 3;
+        final int levelCap = 2;
+
+        int type = rnd.nextInt(typeCnt);
+        int level = rnd.nextInt(levelCap + 1);
+
+        if (type == 0) {
+            final int manaCast = 100;
+            final int points = 10;
+            return new ManaPotion(level, manaCast, points);
+        } else if (type == 1) {
+            final int manaCast = 100;
+            final int points = 10;
+            return new HealthPotion(level, manaCast, points);
+        } else if (type == 2) {
+            final int points = 10;
+            return new Sword(level, points);
+        }
+
+        return null;
     }
 
     private void respawnMonster(Monster monster) {
@@ -175,6 +208,12 @@ public class GameMaster implements PlayerDiedListener, EntityMovedListener,
             }
         }
 
+        for (Treasure treasure : treasures) {
+            if (treasure.getPosition().equals(new Position(r, c)) == true) {
+                entitiesOnPosition.add(treasure);
+            }
+        }
+
         return entitiesOnPosition;
     }
 
@@ -257,7 +296,7 @@ public class GameMaster implements PlayerDiedListener, EntityMovedListener,
     }
 
     public void respawnPlayer(Player player) throws NoAvailableMapPositionsException {
-        player.resurrect();
+        player.resurrect(rnd);
 
         Position position = getRandomFreePosition();
         if (position == null) {
@@ -427,6 +466,19 @@ public class GameMaster implements PlayerDiedListener, EntityMovedListener,
         }
 
         item.setAsAWeapon(player);
+        refresh();
+    }
+
+    @Override
+    public void onTreasureTaken(Treasure treasure) {
+        treasures.remove(treasure);
+        Position newPosition = getRandomFreePosition();
+
+        if (newPosition != null) {
+            treasure.setPosition(newPosition);
+            treasures.add(treasure);
+        }
+
         refresh();
     }
 }

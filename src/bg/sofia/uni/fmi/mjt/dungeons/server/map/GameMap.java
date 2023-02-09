@@ -2,25 +2,49 @@ package bg.sofia.uni.fmi.mjt.dungeons.server.map;
 
 import bg.sofia.uni.fmi.mjt.dungeons.server.entity.EmptyCell;
 import bg.sofia.uni.fmi.mjt.dungeons.server.entity.GridEntity;
+import bg.sofia.uni.fmi.mjt.dungeons.server.entity.WallCell;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class GameMap {
     private int n;
     private int m;
     private GridEntity[][] grid;
 
-    public GameMap(int n, int m) {
+    public GameMap(int n, int m, int wallCellCnt) {
+        if (n <= 0) {
+            throw new IllegalArgumentException("GameMap dimension must be positive");
+        }
+        if (m <= 0) {
+            throw new IllegalArgumentException("GameMap dimension must be positive");
+        }
+        if (wallCellCnt < 0) {
+            throw new IllegalArgumentException("WallCellCnt cannot be negative");
+        }
+
         this.n = n;
         this.m = m;
         this.grid = new GridEntity[n][m];
 
-        fillGrid();
+        this.fillGrid(wallCellCnt);
     }
 
-    private void fillGrid() {
+    private void fillGrid(int wallCellCnt) {
+        List<Position> allCells = new ArrayList<>();
         for (int r = 0; r < n; r++) {
             for (int c = 0; c < m; c++) {
-                grid[r][c] = new EmptyCell(new Position(r, c));
+                allCells.add(new Position(r, c));
             }
+        }
+
+        Collections.shuffle(allCells);
+        for (int i = 0; i < wallCellCnt; i++) {
+            grid[allCells.get(i).row()][allCells.get(i).col()] = new WallCell(allCells.get(i));
+        }
+        for (int i = wallCellCnt; i < allCells.size(); i++) {
+            grid[allCells.get(i).row()][allCells.get(i).col()] = new EmptyCell(allCells.get(i));
         }
     }
 

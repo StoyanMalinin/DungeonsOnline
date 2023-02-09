@@ -4,9 +4,10 @@ import bg.sofia.uni.fmi.mjt.dungeons.common.Stats;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 
 public interface Backpack extends Serializable {
-    Collection<Item> getItems();
+    List<Item> getItems();
 
     boolean addItem(Item item);
 

@@ -43,7 +43,8 @@ public class MapMoveController implements MoveController {
             throw new IllegalArgumentException("Direction cannot be null");
         }
 
-        return gameMap.isInside(position.moveByDirection(direction));
+        return gameMap.isInside(position.moveByDirection(direction)) == true
+                && gameMap.getAt(position.moveByDirection(direction)).canEnter() == true;
     }
 
     @Override
