@@ -1,5 +1,6 @@
 package bg.sofia.uni.fmi.mjt.dungeons.server.web;
 
+import bg.sofia.uni.fmi.mjt.dungeons.client.DefaultLogger;
 import bg.sofia.uni.fmi.mjt.dungeons.common.PlayerId;
 import bg.sofia.uni.fmi.mjt.dungeons.common.command.CommandToServer;
 import bg.sofia.uni.fmi.mjt.dungeons.common.command.UnregisterPlayerCommand;
@@ -39,10 +40,10 @@ public class ClientInputHandler implements Runnable {
                 executor.executeCommand(command);
             }
         } catch (IOException e) {
-            System.out.println("Disconnecting client with address: " + clientSocket.getInetAddress());
+            DefaultLogger.logMessage("Disconnecting client with address: " + clientSocket.getInetAddress());
             executor.executeCommand(new UnregisterPlayerCommand(playerId));
         } catch (ClassNotFoundException e) {
-            //todo
+            DefaultLogger.logMessage("The client has sent an invalid request");
         }
     }
 }

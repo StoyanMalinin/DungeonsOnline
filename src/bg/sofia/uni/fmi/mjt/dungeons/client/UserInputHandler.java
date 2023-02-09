@@ -44,12 +44,13 @@ public class UserInputHandler implements Runnable {
                         serverOutput.writeObject(new PerformInteractionFromChoiceCommand(id, choiceInd));
                         serverOutput.flush();
                     } catch (NumberFormatException e) {
-                        System.out.println("Invalid command");
+
+                        DefaultLogger.logMessage("Invalid command");
                     }
                 }
             }
         } catch (IOException e) {
-            System.out.println("There was an error with the network communication");
+            DefaultLogger.logMessage("There is a problem with the network communication");
         }
     }
 }

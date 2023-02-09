@@ -1,5 +1,6 @@
 package bg.sofia.uni.fmi.mjt.dungeons.server.web;
 
+import bg.sofia.uni.fmi.mjt.dungeons.client.DefaultLogger;
 import bg.sofia.uni.fmi.mjt.dungeons.common.ClientPlayerView;
 import bg.sofia.uni.fmi.mjt.dungeons.server.entity.player.Player;
 import bg.sofia.uni.fmi.mjt.dungeons.server.entity.player.PlayerStateMonitor;
@@ -38,9 +39,9 @@ public class ClientMessageSender implements Runnable {
                 }
             }
         } catch (IOException e) {
-            System.out.println("Could not connect to player. The server will remove it from the game.");
+            DefaultLogger.logMessage("Could not connect to player. The server will remove it from the game.");
         } catch (InterruptedException e) {
-            System.out.println("Server thread was interrupted");
+            DefaultLogger.logMessage("Server thread was interrupted");
         }
     }
 }

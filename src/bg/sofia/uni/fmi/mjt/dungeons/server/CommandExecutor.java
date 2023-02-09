@@ -1,5 +1,6 @@
 package bg.sofia.uni.fmi.mjt.dungeons.server;
 
+import bg.sofia.uni.fmi.mjt.dungeons.client.DefaultLogger;
 import bg.sofia.uni.fmi.mjt.dungeons.common.PlayerId;
 import bg.sofia.uni.fmi.mjt.dungeons.common.command.CommandToServer;
 import bg.sofia.uni.fmi.mjt.dungeons.common.command.ProducerCommandToServer;
@@ -28,18 +29,12 @@ public class CommandExecutor {
         try {
             command.execute(gameMaster);
         } catch (ServerLogicException e) {
-
+            DefaultLogger.logException("A safe error has occurred on the server", e);
         } catch (UnexpectedServerLogicException e) {
-
+            DefaultLogger.logException("An unsafe error has occurred on the server", e);
+        } catch (Exception e) {
+            DefaultLogger.logException("An unexpected error has occurred on the server", e);
         }
-    }
-
-    public synchronized <T> T executeProducerCommand(ProducerCommandToServer<T> command) {
-        if (command == null) {
-            throw new IllegalArgumentException("Command cannot be null");
-        }
-
-        return command.execute(gameMaster);
     }
 
     public synchronized Player registerPlayer() throws NoAvailableMapPositionsException, NoAvailablePlayersException {
