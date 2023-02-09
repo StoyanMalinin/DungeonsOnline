@@ -58,4 +58,23 @@ public class AttackInteraction implements InteractionWithOne {
     public String toString() {
         return "Attack " + subject.getName();
     }
+
+    @Override
+    public int hashCode() {
+        return initiator.hashCode() ^ subject.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+
+        if (obj instanceof AttackInteraction other) {
+            return subject.equals(other.subject) == true
+                    && initiator.equals(other.initiator);
+        }
+
+        return false;
+    }
 }

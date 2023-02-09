@@ -1,9 +1,7 @@
 package bg.sofia.uni.fmi.mjt.dungeons.server;
 
-import bg.sofia.uni.fmi.mjt.dungeons.client.DefaultLogger;
-import bg.sofia.uni.fmi.mjt.dungeons.common.PlayerId;
+import bg.sofia.uni.fmi.mjt.dungeons.common.DefaultLogger;
 import bg.sofia.uni.fmi.mjt.dungeons.common.command.CommandToServer;
-import bg.sofia.uni.fmi.mjt.dungeons.common.command.ProducerCommandToServer;
 import bg.sofia.uni.fmi.mjt.dungeons.server.entity.player.Player;
 import bg.sofia.uni.fmi.mjt.dungeons.server.exception.NoAvailableMapPositionsException;
 import bg.sofia.uni.fmi.mjt.dungeons.server.exception.NoAvailablePlayersException;

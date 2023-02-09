@@ -1,9 +1,8 @@
 package bg.sofia.uni.fmi.mjt.dungeons.server.web;
 
-import bg.sofia.uni.fmi.mjt.dungeons.client.DefaultLogger;
+import bg.sofia.uni.fmi.mjt.dungeons.common.DefaultLogger;
 import bg.sofia.uni.fmi.mjt.dungeons.common.ClientPlayerView;
 import bg.sofia.uni.fmi.mjt.dungeons.server.entity.player.Player;
-import bg.sofia.uni.fmi.mjt.dungeons.server.entity.player.PlayerStateMonitor;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;

@@ -1,4 +1,4 @@
-package bg.sofia.uni.fmi.mjt.dungeons.client;
+package bg.sofia.uni.fmi.mjt.dungeons.common;
 
 import java.io.*;
 import java.nio.file.Path;

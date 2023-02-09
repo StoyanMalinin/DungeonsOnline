@@ -44,4 +44,23 @@ public class PlayerEquipWeaponInteraction implements InteractionWithZero {
     public String toString() {
         return "Equip " + item.getName();
     }
+
+    @Override
+    public int hashCode() {
+        return player.hashCode() ^ item.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+
+        if (obj instanceof PlayerEquipWeaponInteraction other) {
+            return player.equals(other.player) == true
+                    && item.equals(other.item);
+        }
+
+        return false;
+    }
 }

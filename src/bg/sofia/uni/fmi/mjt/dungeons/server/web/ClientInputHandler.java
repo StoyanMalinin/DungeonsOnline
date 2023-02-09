@@ -1,6 +1,6 @@
 package bg.sofia.uni.fmi.mjt.dungeons.server.web;
 
-import bg.sofia.uni.fmi.mjt.dungeons.client.DefaultLogger;
+import bg.sofia.uni.fmi.mjt.dungeons.common.DefaultLogger;
 import bg.sofia.uni.fmi.mjt.dungeons.common.PlayerId;
 import bg.sofia.uni.fmi.mjt.dungeons.common.command.CommandToServer;
 import bg.sofia.uni.fmi.mjt.dungeons.common.command.UnregisterPlayerCommand;

@@ -1,6 +1,7 @@
 package bg.sofia.uni.fmi.mjt.dungeons.client;
 
 import bg.sofia.uni.fmi.mjt.dungeons.common.ClientPlayerView;
+import bg.sofia.uni.fmi.mjt.dungeons.common.DefaultLogger;
 import bg.sofia.uni.fmi.mjt.dungeons.common.PlayerId;
 
 import java.io.*;

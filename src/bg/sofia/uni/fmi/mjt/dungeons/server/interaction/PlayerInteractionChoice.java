@@ -3,19 +3,19 @@ package bg.sofia.uni.fmi.mjt.dungeons.server.interaction;
 import bg.sofia.uni.fmi.mjt.dungeons.server.entity.player.Player;
 import jdk.jshell.spi.ExecutionControl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class PlayerInteractionChoice implements InteractionChoice {
 
     private Player player;
     private List<Interaction> options;
+    private HashSet<Interaction> addedOptions;
+
 
     public PlayerInteractionChoice(Player player) {
         this.player = player;
         this.options = new ArrayList<>();
+        this.addedOptions = new HashSet<>();
     }
 
     @Override
@@ -27,7 +27,10 @@ public class PlayerInteractionChoice implements InteractionChoice {
             throw new IllegalArgumentException("The interaction's initiator must be the player");
         }
 
-        options.add(interaction);
+        if (addedOptions.contains(interaction) == false) {
+            addedOptions.add(interaction);
+            options.add(interaction);
+        }
     }
 
     @Override

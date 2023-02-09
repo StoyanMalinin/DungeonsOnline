@@ -1,5 +1,6 @@
 package bg.sofia.uni.fmi.mjt.dungeons.client;
 
+import bg.sofia.uni.fmi.mjt.dungeons.common.DefaultLogger;
 import bg.sofia.uni.fmi.mjt.dungeons.common.PlayerId;
 import bg.sofia.uni.fmi.mjt.dungeons.common.command.MoveCommand;
 import bg.sofia.uni.fmi.mjt.dungeons.common.command.PerformInteractionFromChoiceCommand;
