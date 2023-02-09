@@ -42,6 +42,7 @@ public class UserInputHandler implements Runnable {
                     try {
                         int choiceInd = Integer.valueOf(input);
                         serverOutput.writeObject(new PerformInteractionFromChoiceCommand(id, choiceInd));
+                        serverOutput.flush();
                     } catch (NumberFormatException e) {
                         System.out.println("Invalid command");
                     }

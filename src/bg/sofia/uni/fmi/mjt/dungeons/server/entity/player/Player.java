@@ -2,27 +2,24 @@ package bg.sofia.uni.fmi.mjt.dungeons.server.entity.player;
 
 import bg.sofia.uni.fmi.mjt.dungeons.common.PlayerId;
 import bg.sofia.uni.fmi.mjt.dungeons.common.Stats;
-import bg.sofia.uni.fmi.mjt.dungeons.common.item.Backpack;
+import bg.sofia.uni.fmi.mjt.dungeons.common.item.Item;
 import bg.sofia.uni.fmi.mjt.dungeons.common.item.PlayerBackpack;
-import bg.sofia.uni.fmi.mjt.dungeons.server.entity.FightableEntity;
-import bg.sofia.uni.fmi.mjt.dungeons.server.entity.GameEntity;
-import bg.sofia.uni.fmi.mjt.dungeons.server.entity.GridEntity;
-import bg.sofia.uni.fmi.mjt.dungeons.server.entity.MovableEntity;
+import bg.sofia.uni.fmi.mjt.dungeons.common.item.WeaponItem;
+import bg.sofia.uni.fmi.mjt.dungeons.server.entity.*;
 import bg.sofia.uni.fmi.mjt.dungeons.server.entity.controller.MoveController;
 import bg.sofia.uni.fmi.mjt.dungeons.server.exception.NotAllowedToMoveException;
-import bg.sofia.uni.fmi.mjt.dungeons.server.interaction.InteractionChoice;
-import bg.sofia.uni.fmi.mjt.dungeons.server.interaction.InteractionNegotiator;
-import bg.sofia.uni.fmi.mjt.dungeons.server.interaction.InteractionWithOne;
-import bg.sofia.uni.fmi.mjt.dungeons.server.interaction.PlayerInteractionChoice;
+import bg.sofia.uni.fmi.mjt.dungeons.server.interaction.*;
 import bg.sofia.uni.fmi.mjt.dungeons.server.map.Direction;
 import bg.sofia.uni.fmi.mjt.dungeons.server.map.Position;
 import bg.sofia.uni.fmi.mjt.dungeons.server.observer.EntityMovedObserver;
 import bg.sofia.uni.fmi.mjt.dungeons.server.observer.PlayerDiedObserver;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
-public class Player implements GridEntity, MovableEntity, FightableEntity {
+public class Player implements GridEntity, MovableEntity,
+        FightableEntity, WeaponCarryingEntity, ItemConsumingEntity,
+        ItemGivingEntity, ItemReceivingEntity {
 
     private PlayerId id;
     private Position position;
@@ -31,12 +28,23 @@ public class Player implements GridEntity, MovableEntity, FightableEntity {
     private PlayerStateMonitor stateMonitor;
     private int level;
     private Stats baseStats;
-    private Backpack backpack;
+    private PlayerBackpack backpack;
     private PlayerDiedObserver playerDiedObserver;
     private EntityMovedObserver entityMovedObserver;
+    private WeaponItem weaponItem;
+    private Item itemToGive;
+    private ItemReceivingEntity choosenReceiver;
+    private int xp;
 
     private static final double EPS = 0.0001;
     private static final int RESSURRECTION_HEALTH = 100;
+
+    private static final int XP_KILL_BONUS = 10;
+    private static final int XP_LEVEL_LIMIT = 20;
+    private static final int LEVEL_HEALTH_BONUS = 10;
+    private static final int LEVEL_MANA_BONUS = 10;
+    private static final int LEVEL_DEFENSE_BONUS = 5;
+    private static final int LEVEL_ATTACK_BONUS = 5;
 
     public Player(PlayerId id, Position position, MoveController moveController, int level, Stats stats) {
         if (id == null) {
@@ -64,8 +72,20 @@ public class Player implements GridEntity, MovableEntity, FightableEntity {
         this.backpack = new PlayerBackpack();
         this.playerDiedObserver = new PlayerDiedObserver();
         this.entityMovedObserver = new EntityMovedObserver();
+        this.weaponItem = null;
+        this.itemToGive = null;
+        this.choosenReceiver = null;
+        this.xp = 0;
 
         this.stateMonitor = new PlayerStateMonitor();
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public int getXP() {
+        return xp;
     }
 
     public PlayerDiedObserver getPlayerDiedObserver() {
@@ -77,6 +97,10 @@ public class Player implements GridEntity, MovableEntity, FightableEntity {
     }
 
     public Stats getStats() {
+        if (weaponItem != null) {
+            return weaponItem.affectStats(baseStats);
+        }
+
         return baseStats;
     }
 
@@ -128,6 +152,8 @@ public class Player implements GridEntity, MovableEntity, FightableEntity {
         Position oldPosition = position;
         Position newPosition = moveController.move(position, direction);
         position = newPosition;
+
+        resetGiveState();
 
         entityMovedObserver.notifyListeners(this, oldPosition, newPosition);
         return position;
@@ -184,9 +210,16 @@ public class Player implements GridEntity, MovableEntity, FightableEntity {
 
         Position oldPosition = this.position;
         Position newPosition = position;
-
         this.position = position;
+
+        resetGiveState();
+
         entityMovedObserver.notifyListeners(this, oldPosition, newPosition);
+    }
+
+    public void resetGiveState() {
+        choosenReceiver = null;
+        itemToGive = null;
     }
 
     @Override
@@ -195,17 +228,43 @@ public class Player implements GridEntity, MovableEntity, FightableEntity {
     }
 
     @Override
-    public void takeDamage(double damage, FightableEntity attacker) {
+    public boolean takeDamage(double damage, FightableEntity attacker) {
+        boolean fatal = false;
         baseStats = baseStats.changedHealth(baseStats.getHealth() - Math.max(damage - baseStats.getDefense(), 0));
 
         if (isAlive() == false) {
+            fatal = true;
             playerDiedObserver.notifyListeners(this);
         }
+
+        resetGiveState();
+        return fatal;
     }
 
     @Override
     public boolean isAlive() {
         return getStats().getHealth() > EPS;
+    }
+
+    @Override
+    public void onVictimDied(FightableEntity victim) {
+        getHpBonus(XP_KILL_BONUS);
+    }
+
+    private void getHpBonus(int bonus) {
+        xp += bonus;
+        while (xp >= XP_LEVEL_LIMIT) {
+            levelUp();
+            xp -= XP_LEVEL_LIMIT;
+        }
+    }
+
+    private void levelUp() {
+        level++;
+        baseStats = baseStats.changedHealth(baseStats.getHealth() + LEVEL_HEALTH_BONUS);
+        baseStats = baseStats.changedHealth(baseStats.getMana() + LEVEL_MANA_BONUS);
+        baseStats = baseStats.changedHealth(baseStats.getAttack() + LEVEL_ATTACK_BONUS);
+        baseStats = baseStats.changedHealth(baseStats.getDefense() + LEVEL_DEFENSE_BONUS);
     }
 
     @Override
@@ -215,13 +274,33 @@ public class Player implements GridEntity, MovableEntity, FightableEntity {
 
     @Override
     public InteractionChoice getInteractionChoice(GameEntity other) {
-        InteractionNegotiator negotiator = new InteractionNegotiator();
-        negotiator.setInitiatorOfAttackInteraction(this);
+
+        List<OfferItemInteraction> offerItemInteractions =
+                backpack.getItems().stream()
+                        .map(item -> (OfferItemInteraction) new PlayerOffersItemInteraction(this, item)).toList();
+
+        List<InteractionWithZero> interactionsWithZero = new LinkedList<>();
+        for (Item item : backpack.getItems()) {
+            if (item.canBeConsumed(this) == true) {
+                interactionsWithZero.add(new PlayerConsumeItemInteraction(this, item));
+            }
+            if (item.canBeSetAsAWeapon(this) == true) {
+                interactionsWithZero.add(new PlayerEquipWeaponInteraction(this, item));
+            }
+        }
+
+        InteractionNegotiator negotiator = InteractionNegotiator.builder()
+                .setAttackInteraction(new AttackInteraction())
+                .setOfferItemInteraction(offerItemInteractions)
+                .setReceiverAcceptItemInteraction(new ReceiverAcceptItemInteraction())
+                .setInteractionsWithZero(interactionsWithZero).build();
+        negotiator.getAttackInteraction().setInitiator(this);
+        negotiator.getReceiverAcceptItemInteraction().setInitiator(this);
 
         other.negotiateForInteractions(negotiator);
 
         InteractionChoice interactionChoice = new PlayerInteractionChoice(this);
-        for (InteractionWithOne interaction : negotiator.getCompleteInteractions()) {
+        for (Interaction interaction : negotiator.getCompleteInteractions()) {
             interactionChoice.addOption(interaction);
         }
 
@@ -230,10 +309,110 @@ public class Player implements GridEntity, MovableEntity, FightableEntity {
 
     @Override
     public void negotiateForInteractions(InteractionNegotiator negotiator) {
-        negotiator.setSubjectOfAttackInteraction(this);
+        if (negotiator.getAttackInteraction() != null) {
+            negotiator.getAttackInteraction().setSubject(this);
+        }
+
+        for (OfferItemInteraction interaction : negotiator.getOfferItemInteractions()) {
+            interaction.setSubject(this);
+        }
+
+        if (negotiator.getReceiverAcceptItemInteraction() != null) {
+            negotiator.getReceiverAcceptItemInteraction().setSubject(this);
+        }
     }
 
     public void resurrect() {
         baseStats = baseStats.changedHealth(RESSURRECTION_HEALTH);
+    }
+
+    @Override
+    public void setWeapon(WeaponItem weapon) {
+        this.weaponItem = weapon;
+
+        resetGiveState();
+    }
+
+    @Override
+    public WeaponItem getWeapon() {
+        return weaponItem;
+    }
+
+    @Override
+    public Item getItemToGive() {
+        return itemToGive;
+    }
+
+    @Override
+    public boolean canGiveItem(ItemReceivingEntity receiver) {
+        return itemToGive != null && choosenReceiver != null && choosenReceiver.equals(receiver);
+    }
+
+    @Override
+    public void giveItem(ItemReceivingEntity receiver) {
+        if (canGiveItem(receiver) == false) {
+            return;
+        }
+
+        backpack.removeItem(itemToGive);
+        if (weaponItem != null && weaponItem.equals(itemToGive) == true) {
+            weaponItem = null;
+        }
+
+        receiver.receiveItem(itemToGive, this);
+        resetGiveState();
+    }
+
+    @Override
+    public boolean canReceiveItem(Item item, ItemGivingEntity giver) {
+        return (backpack.isFull() == false) && giver != null && item != null;
+    }
+
+    @Override
+    public void receiveItem(Item item, ItemGivingEntity giver) {
+        if (canReceiveItem(item, giver) == false) {
+            return;
+        }
+
+        backpack.addItem(item);
+    }
+
+    public void setItemToGive(Item item) {
+        if (item == null) {
+            throw new IllegalArgumentException("Item cannot be null");
+        }
+        if (backpack.containsItem(item) == false) {
+            return;
+        }
+
+        itemToGive = item;
+    }
+
+    public PlayerBackpack getBackpack() {
+        return backpack;
+    }
+
+    public void setChoosenReceiver(ItemReceivingEntity choosenReceiver) {
+        if (choosenReceiver == null) {
+            throw new IllegalArgumentException("Choosen receiver cannot be null");
+        }
+
+        this.choosenReceiver = choosenReceiver;
+    }
+
+    public ItemReceivingEntity getChoosenReceiver() {
+        return choosenReceiver;
+    }
+
+    public void consumeItem(Item item) {
+        if (item == null) {
+            throw new IllegalArgumentException("Item cannot be null");
+        }
+        if (backpack.containsItem(item) == false) {
+            return;
+        }
+
+        baseStats = item.affectStats(baseStats);
+        backpack.removeItem(item);
     }
 }

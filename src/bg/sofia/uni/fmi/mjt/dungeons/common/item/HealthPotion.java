@@ -1,15 +1,17 @@
 package bg.sofia.uni.fmi.mjt.dungeons.common.item;
 
 import bg.sofia.uni.fmi.mjt.dungeons.common.Stats;
+import bg.sofia.uni.fmi.mjt.dungeons.server.entity.ItemConsumingEntity;
+import bg.sofia.uni.fmi.mjt.dungeons.server.entity.WeaponCarryingEntity;
 
 public class HealthPotion implements Spell {
 
-    private double manaCast;
-    private double points;
+    private int manaCast;
+    private int points;
     private String name;
     private int level;
 
-    public HealthPotion(int level, double manaCast, double points) {
+    public HealthPotion(int level, int manaCast, int points) {
         if (level <= 0) {
             throw new IllegalArgumentException("Level must be positive");
         }
@@ -20,10 +22,10 @@ public class HealthPotion implements Spell {
         this.level = level;
         this.points = points;
         this.manaCast = manaCast;
-        this.name = "Mana potion: " + manaCast + "hp";
+        this.name = "Health potion: " + manaCast + "hp, level: " + level;
     }
 
-    public HealthPotion(int level, double manaCast, double points, String name) {
+    public HealthPotion(int level, int manaCast, int points, String name) {
         this(level, manaCast, points);
 
         if (name == null) {
@@ -46,6 +48,25 @@ public class HealthPotion implements Spell {
     @Override
     public Stats affectStats(Stats s) {
         return s.changedHealth(s.getHealth() + points);
+    }
+
+    @Override
+    public boolean canBeSetAsAWeapon(WeaponCarryingEntity entity) {
+        return false;
+    }
+
+    @Override
+    public void setAsAWeapon(WeaponCarryingEntity entity) {
+
+    }
+
+    @Override
+    public boolean canBeConsumed(ItemConsumingEntity entity) {
+        if (entity == null) {
+            throw new IllegalArgumentException("Entity cannot be null");
+        }
+
+        return entity.getStats().getMana() >= manaCast && entity.getLevel() >= level;
     }
 
     @Override

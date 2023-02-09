@@ -4,6 +4,6 @@ import java.util.Collection;
 import java.util.List;
 
 public interface InteractionChoice {
-    List<InteractionWithOne> getOptions();
-    void addOption(InteractionWithOne interaction);
+    List<Interaction> getOptions();
+    void addOption(Interaction interaction);
 }

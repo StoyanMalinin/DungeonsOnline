@@ -4,8 +4,7 @@ import bg.sofia.uni.fmi.mjt.dungeons.server.GameMaster;
 import bg.sofia.uni.fmi.mjt.dungeons.server.entity.GameEntity;
 import bg.sofia.uni.fmi.mjt.dungeons.server.exception.ClientCommandException;
 
-public interface InteractionWithOne extends Interaction {
-    GameEntity getSubject();
-
-    boolean isComplete();
+public interface Interaction {
+    GameEntity getInitiator();
+    void execute(GameMaster gameMaster) throws ClientCommandException;
 }

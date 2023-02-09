@@ -28,7 +28,7 @@ public class Stats implements Serializable {
     }
 
     public double getMana() {
-        return getMana();
+        return mana;
     }
 
     public Stats changedHealth(double health) {

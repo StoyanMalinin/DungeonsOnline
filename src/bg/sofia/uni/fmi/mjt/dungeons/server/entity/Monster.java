@@ -65,19 +65,27 @@ public class Monster implements GridEntity, FightableEntity {
     }
 
     @Override
-    public void takeDamage(double damage, FightableEntity attacker) {
+    public boolean takeDamage(double damage, FightableEntity attacker) {
+        boolean fatal = false;
         health = health - Math.max(0, damage - DEFENSE);
 
         if (isAlive() == false) {
+            fatal = true;
             monsterDiedObserver.notifyListeners(this);
         }
 
         monsterAttackedObserver.notifyListeners(attacker, this);
+        return fatal;
     }
 
     @Override
     public boolean isAlive() {
         return health > EPS;
+    }
+
+    @Override
+    public void onVictimDied(FightableEntity victim) {
+
     }
 
     @Override
@@ -92,7 +100,9 @@ public class Monster implements GridEntity, FightableEntity {
 
     @Override
     public void negotiateForInteractions(InteractionNegotiator negotiator) {
-        negotiator.setSubjectOfAttackInteraction(this);
+        if (negotiator.getAttackInteraction() != null) {
+            negotiator.getAttackInteraction().setSubject(this);
+        }
     }
 
     @Override

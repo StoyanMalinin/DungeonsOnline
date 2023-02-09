@@ -2,11 +2,14 @@ package bg.sofia.uni.fmi.mjt.dungeons.server;
 
 import bg.sofia.uni.fmi.mjt.dungeons.common.PlayerId;
 import bg.sofia.uni.fmi.mjt.dungeons.common.Stats;
+import bg.sofia.uni.fmi.mjt.dungeons.common.item.Item;
+import bg.sofia.uni.fmi.mjt.dungeons.common.item.WeaponItem;
 import bg.sofia.uni.fmi.mjt.dungeons.server.entity.*;
 import bg.sofia.uni.fmi.mjt.dungeons.server.entity.controller.MapMoveController;
 import bg.sofia.uni.fmi.mjt.dungeons.server.entity.player.Player;
 import bg.sofia.uni.fmi.mjt.dungeons.server.entity.player.PlayerState;
 import bg.sofia.uni.fmi.mjt.dungeons.server.exception.*;
+import bg.sofia.uni.fmi.mjt.dungeons.server.interaction.Interaction;
 import bg.sofia.uni.fmi.mjt.dungeons.server.interaction.InteractionChoice;
 import bg.sofia.uni.fmi.mjt.dungeons.server.interaction.InteractionWithOne;
 import bg.sofia.uni.fmi.mjt.dungeons.server.interaction.PlayerInteractionChoice;
@@ -21,7 +24,8 @@ import bg.sofia.uni.fmi.mjt.dungeons.server.observer.PlayerDiedListener;
 
 import java.util.*;
 
-public class GameMaster implements PlayerDiedListener, EntityMovedListener, MonsterDiedListener, MonsterAttackedListener {
+public class GameMaster implements PlayerDiedListener, EntityMovedListener,
+        MonsterDiedListener, MonsterAttackedListener {
 
     private Map<Player, InteractionChoice> playerInteraction;
     private Map<PlayerId, Player> id2Player;
@@ -30,7 +34,6 @@ public class GameMaster implements PlayerDiedListener, EntityMovedListener, Mons
     private Stack<PlayerId> availablePlayerIds;
     private GameMap gameMap;
     private Random rnd;
-
 
     public GameMaster(int mapSize, int monsterCount) {
 
@@ -217,7 +220,7 @@ public class GameMaster implements PlayerDiedListener, EntityMovedListener, Mons
             if (entity.equals(player) == false) {
                 InteractionChoice choice = player.getInteractionChoice(entity);
 
-                for (InteractionWithOne interaction : choice.getOptions()) {
+                for (Interaction interaction : choice.getOptions()) {
                     res.addOption(interaction);
                 }
             }
@@ -272,7 +275,11 @@ public class GameMaster implements PlayerDiedListener, EntityMovedListener, Mons
             throw new IllegalArgumentException("Subject cannot be null");
         }
 
-        subject.takeDamage(initiator.attack(), initiator);
+        boolean fatal = subject.takeDamage(initiator.attack(), initiator);
+        if (fatal == true) {
+            initiator.onVictimDied(subject);
+        }
+
         refresh();
     }
 
@@ -280,7 +287,7 @@ public class GameMaster implements PlayerDiedListener, EntityMovedListener, Mons
         player.setState(getPlayerState(player.getId(), errorMessage));
     }
 
-    public void performChoiceInd(PlayerId playerId, int choiceInd) {
+    public void performChoiceInd(PlayerId playerId, int choiceInd) throws ServerLogicException {
         if (playerId == null) {
             throw new IllegalArgumentException("Id cannot be null");
         }
@@ -296,7 +303,7 @@ public class GameMaster implements PlayerDiedListener, EntityMovedListener, Mons
             return;
         }
 
-        List<InteractionWithOne> options = interactionChoice.getOptions();
+        List<Interaction> options = interactionChoice.getOptions();
         if (!(0 <= choiceInd && choiceInd < options.size())) {
             sendErrorMessageToPlayer(player, "The choice index is out of bounds");
             return;
@@ -317,6 +324,13 @@ public class GameMaster implements PlayerDiedListener, EntityMovedListener, Mons
 
     @Override
     public void onEntityMoved(MovableEntity entity, Position oldPosition, Position newPosition) {
+        for (Player player : alivePlayers) {
+            if (player.getChoosenReceiver() != null
+                && player.getChoosenReceiver().getPosition().equals(player.getPosition()) == false) {
+                player.resetGiveState();
+            }
+        }
+
         refresh();
     }
 
@@ -330,5 +344,89 @@ public class GameMaster implements PlayerDiedListener, EntityMovedListener, Mons
         if (monster.isAlive() == true) {
             attack(monster, attacker);
         }
+    }
+
+    public void playerOffersItem(Player player,
+                                 Item item, ItemReceivingEntity receiver)
+            throws PlayerNotActiveException, ItemDoesNotBelongToPlayerException {
+        if (player == null) {
+            throw new IllegalArgumentException("Player cannot be null");
+        }
+        if (item == null) {
+            throw new IllegalArgumentException("Item cannot be null");
+        }
+        if (receiver == null) {
+            throw new IllegalArgumentException("Receiver cannot be null");
+        }
+        if (alivePlayers.contains(player) == false) {
+            throw new PlayerNotActiveException();
+        }
+        if (player.getBackpack().containsItem(item) == false) {
+            throw new ItemDoesNotBelongToPlayerException("This item is not present in the player's backpack");
+        }
+
+        player.setItemToGive(item);
+        player.setChoosenReceiver(receiver);
+        refresh();
+    }
+
+    public void receiverAcceptItem(ItemReceivingEntity receiver, ItemGivingEntity giver)
+            throws InvalidItemTransactionException {
+        if (receiver == null) {
+            throw new IllegalArgumentException("Receiver cannot be null");
+        }
+        if (giver == null) {
+            throw new IllegalArgumentException("Giver cannot be null");
+        }
+
+        if (!(giver.canGiveItem(receiver) == true
+             && receiver.canReceiveItem(giver.getItemToGive(), giver) == true)) {
+            throw new InvalidItemTransactionException("The given item could not be transferred");
+        }
+
+        giver.giveItem(receiver);
+        refresh();
+    }
+
+    public void playerConsumeItem(Player player, Item item)
+            throws PlayerNotActiveException, InvalidItemConsumptionException, ItemDoesNotBelongToPlayerException {
+        if (player == null) {
+            throw new IllegalArgumentException("Player cannot be null");
+        }
+        if (item == null) {
+            throw new IllegalArgumentException("Item cannot be null");
+        }
+
+        if (alivePlayers.contains(player) == false) {
+            throw new PlayerNotActiveException();
+        }
+        if (item.canBeConsumed(player) == false) {
+            throw new InvalidItemConsumptionException("The provided item cannot be consumed");
+        }
+        if (player.getBackpack().containsItem(item) == false) {
+            throw new ItemDoesNotBelongToPlayerException("This item is not present in the player's backpack");
+        }
+
+        player.consumeItem(item);
+        refresh();
+    }
+
+    public void playerEquipItem(Player player, Item item)
+            throws PlayerNotActiveException, ItemDoesNotBelongToPlayerException {
+        if (player == null) {
+            throw new IllegalArgumentException("Player cannot be null");
+        }
+        if (item == null) {
+            throw new IllegalArgumentException("Item cannot be null");
+        }
+        if (alivePlayers.contains(player) == false) {
+            throw new PlayerNotActiveException();
+        }
+        if (player.getBackpack().containsItem(item) == false) {
+            throw new ItemDoesNotBelongToPlayerException("This item is not present in the player's backpack");
+        }
+
+        item.setAsAWeapon(player);
+        refresh();
     }
 }

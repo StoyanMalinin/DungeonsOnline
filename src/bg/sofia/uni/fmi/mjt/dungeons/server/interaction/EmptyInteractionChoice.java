@@ -5,12 +5,12 @@ import java.util.List;
 
 public class EmptyInteractionChoice implements InteractionChoice {
     @Override
-    public List<InteractionWithOne> getOptions() {
+    public List<Interaction> getOptions() {
         return new ArrayList<>();
     }
 
     @Override
-    public void addOption(InteractionWithOne interaction) {
+    public void addOption(Interaction interaction) {
 
     }
 }

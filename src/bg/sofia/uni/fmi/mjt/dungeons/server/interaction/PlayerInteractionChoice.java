@@ -11,14 +11,15 @@ import java.util.List;
 public class PlayerInteractionChoice implements InteractionChoice {
 
     private Player player;
-    private List<InteractionWithOne> options;
+    private List<Interaction> options;
 
     public PlayerInteractionChoice(Player player) {
         this.player = player;
         this.options = new ArrayList<>();
     }
 
-    public void addOption(InteractionWithOne interaction) {
+    @Override
+    public void addOption(Interaction interaction) {
         if (interaction == null) {
             throw new IllegalArgumentException("Interaction cannot be null");
         }
@@ -30,7 +31,7 @@ public class PlayerInteractionChoice implements InteractionChoice {
     }
 
     @Override
-    public List<InteractionWithOne> getOptions() {
+    public List<Interaction> getOptions() {
         return List.copyOf(options);
     }
 

@@ -33,6 +33,7 @@ public class ClientMessageSender implements Runnable {
             while (true) {
                 synchronized (player.getStateMonitor()) {
                     stream.writeObject(new ClientPlayerView(player.getState()));
+                    stream.flush();
                     player.getStateMonitor().wait();
                 }
             }
