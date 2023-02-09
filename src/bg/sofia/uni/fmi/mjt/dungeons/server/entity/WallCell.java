@@ -14,7 +14,7 @@ public class WallCell implements GridEntity {
 
     @Override
     public Position getPosition() {
-        return null;
+        return position;
     }
 
     @Override
@@ -34,7 +34,7 @@ public class WallCell implements GridEntity {
 
     @Override
     public String getName() {
-        return "WallCell(" + position.row() + ", " + position.col()+ ")";
+        return "WallCell(" + position.row() + ", " + position.col() + ")";
     }
 
     @Override
@@ -45,5 +45,23 @@ public class WallCell implements GridEntity {
     @Override
     public void negotiateForInteractions(InteractionNegotiator negotiator) {
 
+    }
+
+    @Override
+    public int hashCode() {
+        return position.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+
+        if (obj instanceof WallCell other) {
+            return position.equals(other.position);
+        }
+
+        return false;
     }
 }

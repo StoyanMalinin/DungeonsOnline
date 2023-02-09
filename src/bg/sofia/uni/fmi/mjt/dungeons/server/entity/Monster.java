@@ -96,7 +96,7 @@ public class Monster implements GridEntity, FightableEntity {
 
     @Override
     public String getName() {
-        return "Monster(" + id + ")";
+        return "Monster, level: " + level;
     }
 
     @Override
@@ -141,5 +141,23 @@ public class Monster implements GridEntity, FightableEntity {
 
     public void ressurrect() {
         this.health = BASE_HEALTH + (level - 1) * HEALTH_LEVEL_MULTIPLIER;
+    }
+
+    @Override
+    public int hashCode() {
+        return id;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+
+        if (obj instanceof Monster other) {
+            return id == other.id;
+        }
+
+        return false;
     }
 }

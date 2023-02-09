@@ -86,10 +86,10 @@ public class GameMaster implements PlayerDiedListener, EntityMovedListener,
 
     private Item getRandomItem() {
         final int typeCnt = 3;
-        final int levelCap = 2;
+        final int levelCap = 1;
 
         int type = rnd.nextInt(typeCnt);
-        int level = rnd.nextInt(levelCap + 1);
+        int level = rnd.nextInt(levelCap) + 1;
 
         if (type == 0) {
             final int manaCast = 100;
@@ -167,6 +167,7 @@ public class GameMaster implements PlayerDiedListener, EntityMovedListener,
         alivePlayers.add(player);
         player.setState(getPlayerState(player.getId()));
 
+        refresh();
         return player;
     }
 
@@ -268,7 +269,7 @@ public class GameMaster implements PlayerDiedListener, EntityMovedListener,
         playerInteraction.put(player, res);
     }
 
-    public void unregisterPlayer(PlayerId id) {
+    public void unregisterPlayer(PlayerId id)  {
         if (id == null) {
             throw new IllegalArgumentException("Id cannot be null");
         }

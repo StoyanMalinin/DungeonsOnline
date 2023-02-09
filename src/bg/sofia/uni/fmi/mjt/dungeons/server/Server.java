@@ -51,7 +51,8 @@ public class Server {
         try {
             Player player = commandExecutor.registerPlayer();
 
-            ClientInputHandler clientInputHandler = new ClientInputHandler(player.getId(), commandExecutor, clientSocket);
+            ClientInputHandler clientInputHandler =
+                    new ClientInputHandler(player.getId(), commandExecutor, clientSocket);
             ClientMessageSender clientMessageSender = new ClientMessageSender(clientSocket, player);
 
             clientHandlers.execute(clientInputHandler);

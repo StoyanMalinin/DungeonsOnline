@@ -22,7 +22,7 @@ public class ManaPotion implements Spell {
         this.level = level;
         this.points = points;
         this.manaCast = manaCast;
-        this.name = "ManaPotion potion: " + points + "mana, level: " + level + ", manaCast: " + manaCast;
+        this.name = "ManaPotion: " + points + "mana, level: " + level + ", manaCast: " + manaCast;
     }
 
     public ManaPotion(int level, int manaCast, int points, String name) {

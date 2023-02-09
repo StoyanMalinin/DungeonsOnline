@@ -4,8 +4,11 @@ import java.io.Serializable;
 
 public class PlayerId implements Serializable {
     private int number;
+    private static final int MIN_NUMBER = 0;
+    private static final int MAX_NUMBER = 9;
+
     public PlayerId(int number) {
-        if (!(0 <= number && number <= 9)) {
+        if (!(0 <= MIN_NUMBER && number <= MAX_NUMBER)) {
             throw new IllegalArgumentException("Number should be a single digit");
         }
 

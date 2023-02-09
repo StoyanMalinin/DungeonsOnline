@@ -232,7 +232,7 @@ public class Player implements GridEntity, MovableEntity,
     @Override
     public boolean takeDamage(double damage, FightableEntity attacker) {
         boolean fatal = false;
-        baseStats = baseStats.changedHealth(baseStats.getHealth() - Math.max(damage - baseStats.getDefense(), 0));
+        baseStats = baseStats.changedHealth(baseStats.getHealth() - Math.max(damage - getStats().getDefense(), 0));
 
         if (isAlive() == false) {
             fatal = true;

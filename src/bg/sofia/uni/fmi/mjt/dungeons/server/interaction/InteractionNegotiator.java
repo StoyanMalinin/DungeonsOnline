@@ -50,7 +50,8 @@ public class InteractionNegotiator {
             return this;
         }
 
-        public InteractionNegotiatorBuilder setReceiverAcceptItemInteraction(ReceiverAcceptItemInteraction receiverAcceptItemInteraction) {
+        public InteractionNegotiatorBuilder setReceiverAcceptItemInteraction(
+                ReceiverAcceptItemInteraction receiverAcceptItemInteraction) {
             this.receiverAcceptItemInteraction = receiverAcceptItemInteraction;
             return this;
         }

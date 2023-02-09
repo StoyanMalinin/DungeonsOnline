@@ -15,8 +15,6 @@ public class PlayerBackpack implements Backpack, Serializable {
 
     public PlayerBackpack() {
         items = new ArrayList<>();
-        addItem(new ManaPotion(1, 22, 22, "Defoltka"));
-        addItem(new Sword(1, 6969));
     }
 
     @Override
